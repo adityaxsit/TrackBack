@@ -254,6 +254,139 @@ function Analytics() {
       percentage: (count / totalSolved) * 100,
     }));
 
+  // -------------------------
+  // HEATMAP DATA
+  // -------------------------
+
+  const dateCounts = {};
+
+  problems.forEach((problem) => {
+    const date = new Date(problem.solvedAt);
+
+    const dateKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1;
+  });
+  const generateCalendarDates = () => {
+    const dates = [];
+
+    const today = new Date();
+
+    const startDate = new Date(today.getFullYear(), 0, 1);
+
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= today) {
+      const dateKey = `${currentDate.getFullYear()}-${String(
+        currentDate.getMonth() + 1,
+      ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+
+      dates.push(dateKey);
+
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+  };
+
+  const calendarDates = generateCalendarDates();
+  const weeks = [];
+
+  let currentWeek = [];
+
+  calendarDates.forEach((dateKey) => {
+    const date = new Date(dateKey);
+
+    // JavaScript:
+    // Sunday = 0
+    // Monday = 1
+    // ...
+    // Saturday = 6
+
+    const day = date.getDay();
+
+    // Convert so Monday = 0
+    const mondayIndex = day === 0 ? 6 : day - 1;
+
+    // If this is the first date of the year
+    // and it doesn't start on Monday,
+    // add empty cells before it.
+    if (weeks.length === 0 && currentWeek.length === 0) {
+      for (let i = 0; i < mondayIndex; i++) {
+        currentWeek.push(null);
+      }
+    }
+
+    currentWeek.push(dateKey);
+
+    // Once we have 7 days,
+    // the week is complete.
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  });
+
+  // Add the remaining days
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(null);
+    }
+
+    weeks.push(currentWeek);
+  }
+  const getHeatLevel = (dateKey) => {
+    const count = dateCounts[dateKey] || 0;
+
+    if (count === 0) {
+      return "level0";
+    }
+
+    if (count === 1) {
+      return "level1";
+    }
+
+    if (count === 2) {
+      return "level2";
+    }
+
+    return "level3";
+  };
+  const getMonthLabel = (dateKey) => {
+    const date = new Date(dateKey);
+
+    return date.toLocaleString("en-US", {
+      month: "short",
+    });
+  };
+  const monthLabels = [];
+
+  weeks.forEach((week, weekIndex) => {
+    const firstDate = week.find((date) => date !== null);
+
+    if (!firstDate) {
+      return;
+    }
+
+    const month = new Date(firstDate).getMonth();
+
+    // Only add label when this is the first week
+    // containing that month.
+    if (
+      weekIndex === 0 ||
+      new Date(
+        weeks[weekIndex - 1].find((date) => date !== null),
+      ).getMonth() !== month
+    ) {
+      monthLabels.push({
+        weekIndex,
+        label: getMonthLabel(firstDate),
+      });
+    }
+  });
+
   return (
     <div className={styles.analyticsPage}>
       {/* PAGE HEADING */}
@@ -449,6 +582,86 @@ function Analytics() {
             ))}
           </div>
         </section>
+      </section>
+      {/* SOLVING ACTIVITY / HEATMAP */}
+
+      <section className={styles.heatmapCard}>
+        <div className={styles.cardHeader}>
+          <p className={styles.cardLabel}>Solving Activity</p>
+
+          <span className={styles.cardSubtext}>
+            Problems solved throughout the year
+          </span>
+        </div>
+
+        <div className={styles.heatmapWrapper}>
+          <div className={styles.dayLabels}>
+            <span>Mon</span>
+            <span></span>
+            <span>Wed</span>
+            <span></span>
+            <span>Fri</span>
+            <span></span>
+            <span>Sun</span>
+          </div>
+
+          <div className={styles.heatmapContent}>
+            <div className={styles.monthLabels}>
+              {weeks.map((_, weekIndex) => {
+                const month = monthLabels.find(
+                  (item) => item.weekIndex === weekIndex,
+                );
+
+                return <span key={weekIndex}>{month?.label || ""}</span>;
+              })}
+            </div>
+
+            <div className={styles.heatmap}>
+              {weeks.map((week, weekIndex) => (
+                <div className={styles.heatmapWeek} key={weekIndex}>
+                  {week.map((dateKey, dayIndex) => {
+                    if (!dateKey) {
+                      return (
+                        <div
+                          className={styles.heatmapCellEmpty}
+                          key={dayIndex}
+                        />
+                      );
+                    }
+
+                    const count = dateCounts[dateKey] || 0;
+
+                    return (
+                      <div
+                        className={`${styles.heatmapCell} ${
+                          styles[getHeatLevel(dateKey)]
+                        }`}
+                        key={dateKey}
+                        title={`${count} ${
+                          count === 1 ? "problem" : "problems"
+                        } solved on ${dateKey}`}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.heatmapLegend}>
+          <span>Less</span>
+
+          <span className={`${styles.legendCell} ${styles.level0}`} />
+
+          <span className={`${styles.legendCell} ${styles.level1}`} />
+
+          <span className={`${styles.legendCell} ${styles.level2}`} />
+
+          <span className={`${styles.legendCell} ${styles.level3}`} />
+
+          <span>More</span>
+        </div>
       </section>
     </div>
   );
