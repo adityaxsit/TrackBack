@@ -1,0 +1,60 @@
+{
+  "collections": [
+    {
+      "id": 1,
+      "name": "Graph Revision",
+      "description": "Important graph problems to revise",
+      "type": "custom",
+      "problemIds": [6, 10, 27, 28, 29, 30, 48, 49]
+    },
+    {
+      "id": 2,
+      "name": "Dynamic Programming",
+      "description": "Core DP problems for practice and revision",
+      "type": "custom",
+      "problemIds": [3, 20, 21, 22, 31, 32, 33, 50]
+    },
+    {
+      "id": 3,
+      "name": "Trees",
+      "description": "Important binary tree problems",
+      "type": "custom",
+      "problemIds": [2, 23, 24, 25, 26]
+    },
+    {
+      "id": 4,
+      "name": "Arrays",
+      "description": "Important array problems",
+      "type": "custom",
+      "problemIds": [1, 9, 14, 37, 38, 39]
+    },
+    {
+      "id": 5,
+      "name": "Linked List",
+      "description": "Linked list problems for practice",
+      "type": "custom",
+      "problemIds": [4, 34, 35]
+    },
+    {
+      "id": 6,
+      "name": "Sliding Window",
+      "description": "Sliding window problems",
+      "type": "custom",
+      "problemIds": [16, 45]
+    },
+    {
+      "id": 7,
+      "name": "Backtracking",
+      "description": "Backtracking problems",
+      "type": "custom",
+      "problemIds": [12, 46, 47]
+    },
+    {
+      "id": 8,
+      "name": "Placement Must Do",
+      "description": "Frequently useful interview problems",
+      "type": "custom",
+      "problemIds": [1, 2, 3, 10, 14, 16, 18, 20, 22, 24, 30, 36, 38, 40, 43, 44]
+    }
+  ]
+}

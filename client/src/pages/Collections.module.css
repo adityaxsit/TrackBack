@@ -1,0 +1,178 @@
+.page {
+  padding: 0px;
+}
+
+.page h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.page > p {
+  margin: 6px 0 28px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* COLLECTION GRID */
+
+.collectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* COLLECTION CARD */
+
+.collectionCard {
+  padding: 22px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+ 
+}
+
+
+
+/* TITLE */
+
+.collectionCard h2 {
+  margin: 0 0 8px;
+
+  color: var(--text-primary);
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* DESCRIPTION */
+
+.collectionCard p {
+  margin: 0 0 18px;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* PROBLEM COUNT */
+
+.collectionCard span {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 9px;
+
+  border: 1px solid var(--border);
+  border-radius: 6px;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+  font-weight: 500;
+}
+.collectionDetails {
+  margin-top: 28px;
+  padding: 22px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.detailsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+.detailsHeader h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.detailsHeader p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.closeButton,
+.viewButton {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  background: transparent;
+  color: var(--text-secondary);
+
+  padding: 7px 12px;
+
+  cursor: pointer;
+}
+
+.closeButton:hover,
+.viewButton:hover {
+  border-color: var(--lava);
+  color: var(--text-primary);
+}
+
+.viewButton {
+  display: block;
+  margin-top: 18px;
+}
+
+.problemList {
+  display: flex;
+  flex-direction: column;
+}
+
+.problemRow {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 1fr;
+
+  align-items: center;
+
+  padding: 13px 0;
+
+  border-top: 1px solid var(--border);
+
+  font-size: 13px;
+}
+
+.problemRow a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.problemRow a:hover {
+  color: var(--lava);
+}
+
+.problemRow span {
+  color: var(--text-secondary);
+}
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+  .collectionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .page {
+    padding: 16px;
+  }
+
+  .collectionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
