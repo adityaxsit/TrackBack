@@ -52,14 +52,14 @@ function Sidebar({ sidebarOpen,setSidebarOpen }) {
         <p className={styles.sectionTitle}>PREPARATION</p>
 
         <NavLink
-          to="/preparation"
+          to="/patterns"
           onClick={()=> setSidebarOpen(false)}
           className={({ isActive }) =>
             `${styles.menuItem} ${isActive ? styles.active : ""}`
           }
         >
-          <span>📈</span>
-          <span>Preparation</span>
+          <span>🎓</span>
+          <span>Patterns</span>
         </NavLink>
 
         <p className={styles.sectionTitle}>LIBRARY</p>

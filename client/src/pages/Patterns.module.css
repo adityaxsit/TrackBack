@@ -1,0 +1,241 @@
+.page {
+  padding: 0;
+}
+
+.pageHeader {
+  margin-bottom: 28px;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.pageHeader p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* PATTERN GRID */
+
+.patternGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.patternCard {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 190px;
+  padding: 20px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.patternCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--lava);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.patternCard h2 {
+  margin: 0 0 10px;
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.patternCard > p {
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* CARD FOOTER */
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.cardFooter span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* BUTTONS */
+
+.viewButton,
+.closeButton {
+  padding: 7px 11px;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  background: transparent;
+  color: var(--text-secondary);
+
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.viewButton:hover,
+.closeButton:hover {
+  border-color: var(--lava);
+  color: var(--text-primary);
+}
+
+/* DETAILS */
+
+.patternDetails {
+  margin-top: 28px;
+  padding: 22px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.detailsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  margin-bottom: 22px;
+}
+
+.detailsHeader h2 {
+  margin: 0 0 7px;
+  font-size: 21px;
+}
+
+.detailsHeader p {
+  max-width: 800px;
+  margin: 0;
+
+  color: var(--text-secondary);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* PROBLEM LIST */
+
+.problemList h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.problemRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 100px;
+
+  align-items: center;
+  gap: 15px;
+
+  padding: 13px 0;
+
+  border-top: 1px solid var(--border);
+
+  font-size: 13px;
+}
+
+.problemTitle {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.problemTitle:hover {
+  color: var(--lava);
+}
+
+.problemRow > span {
+  color: var(--text-secondary);
+}
+
+/* DIFFICULTY */
+
+.difficulty {
+  width: fit-content;
+
+  padding: 4px 8px;
+
+  border-radius: 5px;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.easy {
+  color: #13e861;
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.medium {
+  color: #e09004;
+  background: rgba(250, 204, 21, 0.1);
+}
+
+.hard {
+  color: #dc3232;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+/* EXTERNAL REFERENCE */
+
+.externalReference {
+  display: inline-block;
+
+  margin-top: 20px;
+
+  color: var(--lava);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.externalReference:hover {
+  text-decoration: underline;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+  .patternGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .patternGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .detailsHeader {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .problemRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}

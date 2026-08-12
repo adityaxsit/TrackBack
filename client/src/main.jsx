@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/Dashboard.jsx";
 import Problems from "./pages/Problems.jsx";
 import Analytics from "./pages/Analytics.jsx";
-import Preparation from "./pages/Preparation.jsx";
+import Patterns from "./pages/Patterns.jsx";
 import Collections from "./pages/Collections.jsx";
 import Settings from "./pages/Settings.jsx";
 import Revision from "./pages/Revision.jsx";
@@ -41,8 +41,8 @@ const router = createBrowserRouter([
         element: <Analytics />,
       },
       {
-        path: "preparation",
-        element: <Preparation />,
+        path: "patterns",
+        element: <Patterns />,
       },
       {
         path: "collections",

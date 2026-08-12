@@ -1,0 +1,210 @@
+{
+  "patterns": [
+    {
+      "id": "p1",
+      "name": "Sliding Window",
+      "description": "Maintain a window over a contiguous section of the array/string, expanding or shrinking it based on a condition. Used when the problem asks about contiguous subarrays or substrings.",
+      "problemRefs": [
+        {
+          "title": "Longest Substring Without Repeating Characters",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Minimum Window Substring",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/minimum-window-substring/",
+          "difficulty": "Hard"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p2",
+      "name": "Two Pointers",
+      "description": "Use two indices moving toward or away from each other to avoid nested loops, typically on sorted arrays or when checking pairs/triplets.",
+      "problemRefs": [
+        {
+          "title": "3Sum",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/3sum/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Next Round",
+          "platform": "Codeforces",
+          "url": "https://codeforces.com/problemset/problem/158/A",
+          "difficulty": "Easy"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p3",
+      "name": "Fast & Slow Pointers",
+      "description": "Two pointers moving at different speeds through a linked list or sequence, commonly used to detect cycles or find midpoints.",
+      "problemRefs": [
+        {
+          "title": "Detect Loop in Linked List",
+          "platform": "GeeksforGeeks",
+          "url": "https://www.geeksforgeeks.org/problems/detect-loop-in-linked-list/1",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Reverse Linked List",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/reverse-linked-list/",
+          "difficulty": "Easy"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p4",
+      "name": "Binary Search on Answer",
+      "description": "Applies binary search not to find an element, but to search over a range of possible answers, narrowing down using a feasibility check.",
+      "problemRefs": [
+        {
+          "title": "Binary Search",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/binary-search/",
+          "difficulty": "Easy"
+        },
+        {
+          "title": "Search in Rotated Sorted Array",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/search-in-rotated-sorted-array/",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p5",
+      "name": "Graph Traversal (BFS/DFS)",
+      "description": "Explore nodes level by level (BFS) or depth-first (DFS) to solve connectivity, shortest-path, or reachability problems on graphs and grids.",
+      "problemRefs": [
+        {
+          "title": "BFS of Graph",
+          "platform": "GeeksforGeeks",
+          "url": "https://www.geeksforgeeks.org/problems/bfs-traversal-of-graph/1",
+          "difficulty": "Easy"
+        },
+        {
+          "title": "Number of Islands",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/number-of-islands/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Rotting Oranges",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/rotting-oranges/",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p6",
+      "name": "Dynamic Programming — 1D State",
+      "description": "Break a problem into overlapping subproblems tracked with a 1D array, building the answer from smaller solved cases.",
+      "problemRefs": [
+        {
+          "title": "Climbing Stairs",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/climbing-stairs/",
+          "difficulty": "Easy"
+        },
+        {
+          "title": "House Robber",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/house-robber/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Coin Change",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/coin-change/",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p7",
+      "name": "Backtracking",
+      "description": "Explore all possible choices recursively, undoing a choice (backtracking) when it doesn't lead to a valid solution. Used for combinations, permutations, and constraint problems.",
+      "problemRefs": [
+        {
+          "title": "Subsets",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/subsets/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "N-Queens",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/n-queens/",
+          "difficulty": "Hard"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p8",
+      "name": "Top K Elements (Heap)",
+      "description": "Use a heap (priority queue) to efficiently track the k largest/smallest/most-frequent elements without fully sorting the data.",
+      "problemRefs": [
+        {
+          "title": "Kth Largest Element in an Array",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/kth-largest-element-in-an-array/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Top K Frequent Elements",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/top-k-frequent-elements/",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p9",
+      "name": "Merge Intervals",
+      "description": "Sort intervals by start time, then merge overlapping ones in a single pass. Common in scheduling and range-overlap problems.",
+      "problemRefs": [
+        {
+          "title": "Merge Intervals",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/merge-intervals/",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    },
+    {
+      "id": "p10",
+      "name": "Topological Sort",
+      "description": "Order nodes in a directed graph such that every edge points forward, used for dependency resolution (e.g. course prerequisites, build order).",
+      "problemRefs": [
+        {
+          "title": "Course Schedule",
+          "platform": "LeetCode",
+          "url": "https://leetcode.com/problems/course-schedule/",
+          "difficulty": "Medium"
+        },
+        {
+          "title": "Detect Cycle in an Undirected Graph",
+          "platform": "GeeksforGeeks",
+          "url": "https://www.geeksforgeeks.org/problems/detect-cycle-in-an-undirected-graph/1",
+          "difficulty": "Medium"
+        }
+      ],
+      "externalReference": "https://neetcode.io/"
+    }
+  ]
+}
