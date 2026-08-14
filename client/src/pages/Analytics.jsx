@@ -1,32 +1,25 @@
-import { useEffect, useState } from "react";
+import {useState } from "react";
+import useFetch from "../hooks/useFetch.js";
 import styles from "./Analytics.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 function Analytics() {
-  const [problems, setProblems] = useState([]);
-  const [revisions, setRevisions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const problemsFetch = useFetch("/data/problems.json");
+  const revisionsFetch = useFetch("/data/revision.json");
+  
+  const loading = problemsFetch.loading || revisionsFetch.loading;
+  const error = problemsFetch.error || revisionsFetch.error;
 
   // FETCH DATA
-  useEffect(() => {
-    Promise.all([
-      fetch("/data/problems.json").then((response) => response.json()),
-      fetch("/data/revision.json").then((response) => response.json()),
-    ])
-      .then(([problemsData, revisionsData]) => {
-        setProblems(problemsData.problems);
-        setRevisions(revisionsData.revisions);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch analytics data:", error);
-        setLoading(false);
-      });
-  }, []);
+  const problems = problemsFetch.data ? problemsFetch.data.problems : [];
+  const revisions = revisionsFetch.data ? revisionsFetch.data.revisions : [];
 
   if (loading) {
     return <LoadingSpinner />;
+  }
+  if(error){
+    return <p>Error:{error}</p>
   }
 
   // -------------------------

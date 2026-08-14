@@ -1,25 +1,26 @@
-import { useEffect, useState } from "react";
+import useFetch from "../hooks/useFetch.js";
+import {  useEffect,useState } from "react";
 import styles from "./Problems.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Problems() {
-  const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {data,loading,error}=useFetch("/data/problems.json");
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [platform, setPlatform] = useState("All platforms");
   const [difficulty, setDifficulty] = useState("All difficulties");
   const [revision, setRevision] = useState("All");
   const [sortBy, setSortBy] = useState("Newest solved");
   const [company, setCompany] = useState("All companies");
+  
+  const [problems, setProblems] = useState([]);
 
-  useEffect(() => {
-    fetch("/data/problems.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setProblems(data.problems);
-        setLoading(false);
-      });
-  }, []);
+  useEffect(()=>{
+    if(data){
+      setProblems(data.problems);
+    }
+  },[data]);
+ 
 
   const handleRevisionToggle = (id) => {
     setProblems(
@@ -82,6 +83,9 @@ function Problems() {
 
   if (loading) {
     return <LoadingSpinner />;
+  }
+  if(error){
+    return <p>Error:{error}</p>
   }
 
   const totalSolved = problems.length;

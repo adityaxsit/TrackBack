@@ -1,25 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import useFetch from "../hooks/useFetch.js";
 import styles from "./Patterns.module.css";
 
 function Patterns() {
-  const [patterns, setPatterns] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {data,loading,error}=useFetch("/data/patterns.json");
   const [selectedPattern, setSelectedPattern] = useState(null);
 
   const patternDetailsRef = useRef(null);
 
-  useEffect(() => {
-    fetch("/data/patterns.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setPatterns(data.patterns);
-        setLoading(false);
-      });
-  }, []);
-
+  
   const handleViewPattern = (pattern) => {
     setSelectedPattern(pattern);
-
+    
     setTimeout(() => {
       patternDetailsRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -27,10 +19,14 @@ function Patterns() {
       });
     }, 0);
   };
-
+  
   if (loading) {
     return <p>Loading...</p>;
   }
+  if(error){
+    return <p>Error: {error}</p>;
+  }
+  const patterns = data.patterns;
 
   return (
     <div className={styles.page}>

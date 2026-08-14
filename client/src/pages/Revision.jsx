@@ -1,27 +1,31 @@
+import useFetch from "../hooks/useFetch.js";
 import { useEffect, useState } from "react";
 import styles from "./Revision.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Revision() {
-  const [problems, setProblems] = useState([]);
-  const [revisions, setRevisions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const problemsFetch = useFetch("/data/problems.json");
+  const revisionsFetch = useFetch("/data/revision.json");
+  
+  const loading = problemsFetch.loading || revisionsFetch.loading;
+  const error = problemsFetch.error || revisionsFetch.error;
   const [status, setStatus] = useState("queue");
 
-  // FETCH BOTH JSON FILES
-  useEffect(() => {
-    Promise.all([
-      fetch("/data/problems.json").then((response) => response.json()),
-      fetch("/data/revision.json").then((response) => response.json()),
-    ]).then(([problemsData, revisionsData]) => {
-      setProblems(problemsData.problems);
-      setRevisions(revisionsData.revisions);
-      setLoading(false);
-    });
-  }, []);
+  const problems = problemsFetch.data ? problemsFetch.data.problems : [];
+ 
+  const [revisions, setRevisions] = useState([]);
+  
+  useEffect(() => {   
+    if (revisionsFetch.data) {
+      setRevisions(revisionsFetch.data.revisions);
+    }
+  }, [revisionsFetch.data]);
 
   if (loading) {
   return <LoadingSpinner />;
+}
+if (error) {
+  return <p>Error: {error}</p>;
 }
 
   //mark reviewed

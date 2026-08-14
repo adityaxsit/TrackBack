@@ -1,11 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-
+import {useEffect, useRef, useState } from "react";
+import useFetch from "../hooks/useFetch.js";
 import styles from "./Collections.module.css";
 
 function Collections() {
+  const collectionsFetch = useFetch("/data/collections.json");
+  const problemsFetch = useFetch("/data/problems.json");
+  const loading = collectionsFetch.loading || problemsFetch.loading;
+  const error = collectionsFetch.error || problemsFetch.error;
+  const problems = problemsFetch.data ? problemsFetch.data.problems : [];
   const [collections, setCollections] = useState([]);
-  const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (collectionsFetch.data) {
+      setCollections(collectionsFetch.data.collections);
+    }
+  }, [collectionsFetch.data]);
 
   const [selectedCollection, setSelectedCollection] = useState(null);
 
@@ -21,20 +30,13 @@ function Collections() {
 
   const collectionDetailsRef = useRef(null);
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/data/collections.json").then((response) => response.json()),
-
-      fetch("/data/problems.json").then((response) => response.json()),
-    ]).then(([collectionsData, problemsData]) => {
-      setCollections(collectionsData.collections);
-      setProblems(problemsData.problems);
-      setLoading(false);
-    });
-  }, []);
+ 
 
   if (loading) {
     return <p>Loading...</p>;
+  }
+  if(error){
+    return <p>Error: {error}</p>
   }
 
   const getCollectionProblems = (collection) => {

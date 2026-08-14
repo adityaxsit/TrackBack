@@ -1,6 +1,7 @@
 import styles from "./Dashboard.module.css";
+import useFetch from "../hooks/useFetch.js";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 const WEEKLY_GOAL = 25;
@@ -182,29 +183,24 @@ function getCompanyProgress(problems) {
 }
 
 function Dashboard() {
-  const [problems, setProblems] = useState([]);
-  const [revisions, setRevisions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const problemsFetch = useFetch("/data/problems.json");
+  const revisionsFetch = useFetch("/data/revision.json");
+  
+  const loading=  problemsFetch.loading || revisionsFetch.loading;
+  const error= problemsFetch.error || revisionsFetch.error;
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/data/problems.json").then((response) => response.json()),
-      fetch("/data/revision.json").then((response) => response.json()),
-    ])
-      .then(([problemsData, revisionsData]) => {
-        setProblems(problemsData.problems);
-        setRevisions(revisionsData.revisions);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch dashboard data:", error);
-        setLoading(false);
-      });
-  }, []);
+  
 
   if (loading) {
     return <LoadingSpinner />;
   }
+  if(error){
+    return <p>Error:{error}</p>
+  }
+
+  const problems = problemsFetch.data.problems;
+  const revisions = revisionsFetch.data.revisions;
+    
 
   // -------------------------
   // DERIVED DASHBOARD DATA
@@ -457,7 +453,7 @@ function Dashboard() {
                 target="_blank"
                 rel="noreferrer"
               >
-                {problem.title}
+                {problem.title}↗
               </a>
 
               <span>{problem.topic}</span>
