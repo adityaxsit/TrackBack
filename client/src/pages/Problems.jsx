@@ -4,7 +4,7 @@ import styles from "./Problems.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Problems() {
-  const {data,loading,error}=useFetch("/data/problems.json");
+  const { data, loading, error } = useFetch("/api/problems");
   
   const [searchTerm, setSearchTerm] = useState("");
   const [platform, setPlatform] = useState("All platforms");
