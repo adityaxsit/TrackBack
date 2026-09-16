@@ -1,35 +1,74 @@
 import useFetch from "../hooks/useFetch.js";
-import {  useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Problems.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Problems() {
   const { data, loading, error } = useFetch("/api/problems");
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [platform, setPlatform] = useState("All platforms");
   const [difficulty, setDifficulty] = useState("All difficulties");
   const [revision, setRevision] = useState("All");
   const [sortBy, setSortBy] = useState("Newest solved");
   const [company, setCompany] = useState("All companies");
-  
+
   const [problems, setProblems] = useState([]);
 
-  useEffect(()=>{
-    if(data){
+  useEffect(() => {
+    if (data) {
       setProblems(data.problems);
     }
-  },[data]);
- 
+  }, [data]);
 
-  const handleRevisionToggle = (id) => {
-    setProblems(
-      problems.map((problem) =>
-        problem.id === id
-          ? { ...problem, revision: !problem.revision }
-          : problem,
-      ),
-    );
+  const handleRevisionToggle = async (id) => {
+    const problem = problems.find((problem) => problem._id === id);
+
+    if (!problem) return;
+
+    try {
+      const response = await fetch(`/api/problems/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          revision: !problem.revision,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update revision");
+      }
+
+      const data = await response.json();
+
+      setProblems((previousProblems) =>
+        previousProblems.map((problem) =>
+          problem._id === id ? data.problem : problem,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteProblem = async (id) => {
+    try {
+      const response = await fetch(`/api/problems/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete problem");
+      }
+
+      setProblems((previousProblems) =>
+        previousProblems.filter((problem) => problem._id !== id),
+      );
+    } catch (error) {
+      console.error("Delete failed:", error);
+    }
   };
 
   const handleClearFilters = () => {
@@ -84,8 +123,8 @@ function Problems() {
   if (loading) {
     return <LoadingSpinner />;
   }
-  if(error){
-    return <p>Error:{error}</p>
+  if (error) {
+    return <p>Error:{error}</p>;
   }
 
   const totalSolved = problems.length;
@@ -222,7 +261,7 @@ function Problems() {
           </div>
         ) : (
           sortedProblems.map((problem) => (
-            <div className={styles.tableRow} key={problem.id}>
+            <div className={styles.tableRow} key={problem._id}>
               <a
                 className={styles.problemTitle}
                 href={problem.problemUrl}
@@ -251,7 +290,7 @@ function Problems() {
               </div>
 
               <button
-                onClick={() => handleRevisionToggle(problem.id)}
+                onClick={() => handleRevisionToggle(problem._id)}
                 className={
                   problem.revision ? styles.revisionYes : styles.revisionNo
                 }
@@ -262,6 +301,13 @@ function Problems() {
               <span>{new Date(problem.solvedAt).toLocaleDateString()}</span>
 
               <p className={styles.notes}>{problem.notes}</p>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteProblem(problem._id)}
+              >
+                Delete
+              </button>
             </div>
           ))
         )}
