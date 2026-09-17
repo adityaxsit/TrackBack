@@ -14,12 +14,12 @@ const problemSchema = new mongoose.Schema(
 
     topic: {
       type: String,
-      required: true,
+      default: "Uncategorized",
     },
 
     difficulty: {
       type: String,
-      required: true,
+      default: "Unknown",
     },
 
     companies: {
@@ -47,10 +47,10 @@ const problemSchema = new mongoose.Schema(
       default: "",
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
+
+
 
 const Problem = mongoose.model("Problem", problemSchema);
 
