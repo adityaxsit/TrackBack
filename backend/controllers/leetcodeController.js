@@ -91,29 +91,46 @@ const importLeetCodeProblems = async (req, res) => {
 
 const syncLeetCodeProblems = async (req, res) => {
   try {
-    const submissions = await getRecentSubmissions();
+    const { username } = req.body;
 
-    // Only accepted submissions
-    const acceptedSubmissions = submissions.filter(
-      (submission) => submission.statusDisplay === "Accepted"
+    if (!username) {
+      return res.status(400).json({
+        message: "LeetCode username is required",
+      });
+    }
+
+    console.log(`Starting LeetCode sync for ${username}`);
+
+    const submissions = await getRecentSubmissions(username);
+
+    console.log(
+      `Received ${submissions.length} recent submissions`
     );
 
-    // Remove duplicate submissions
+    // Remove duplicate problems
     const uniqueProblems = new Map();
 
-    for (const submission of acceptedSubmissions) {
+    for (const submission of submissions) {
       if (!uniqueProblems.has(submission.titleSlug)) {
-        uniqueProblems.set(submission.titleSlug, submission);
+        uniqueProblems.set(
+          submission.titleSlug,
+          submission
+        );
       }
     }
+
+    console.log(
+      `Unique problems found: ${uniqueProblems.size}`
+    );
 
     let imported = [];
     let skipped = [];
 
     for (const submission of uniqueProblems.values()) {
-      const problemUrl = `https://leetcode.com/problems/${submission.titleSlug}/`;
+      const problemUrl =
+        `https://leetcode.com/problems/${submission.titleSlug}/`;
 
-      // Check if problem already exists
+      // Check MongoDB
       const existingProblem = await Problem.findOne({
         platform: "LeetCode",
         problemUrl,
@@ -124,9 +141,11 @@ const syncLeetCodeProblems = async (req, res) => {
         continue;
       }
 
-      console.log(`New problem found: ${submission.title}`);
+      console.log(
+        `Importing new problem: ${submission.title}`
+      );
 
-      // Fetch problem details
+      // Get difficulty and topics
       const details = await getProblemDetails(
         submission.titleSlug
       );
@@ -142,7 +161,12 @@ const syncLeetCodeProblems = async (req, res) => {
         difficulty: details.difficulty || "Unknown",
         companies: [],
         revision: false,
-        solvedAt: new Date(submission.timestamp),
+
+        // recentAcSubmissionList timestamp is Unix seconds
+        solvedAt: new Date(
+          Number(submission.timestamp) * 1000
+        ),
+
         problemUrl,
         notes: "",
       });
@@ -150,13 +174,21 @@ const syncLeetCodeProblems = async (req, res) => {
       imported.push(problem);
     }
 
+    console.log(
+      `Sync completed: ${imported.length} new problems`
+    );
+
     res.status(200).json({
       message: "LeetCode sync completed successfully",
+
       checkedSubmissions: submissions.length,
-      acceptedSubmissions: acceptedSubmissions.length,
+
       uniqueProblemsChecked: uniqueProblems.size,
+
       importedCount: imported.length,
+
       skippedCount: skipped.length,
+
       imported,
       skipped,
     });
@@ -173,7 +205,6 @@ const syncLeetCodeProblems = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   importLeetCodeProblems,
   syncLeetCodeProblems,
