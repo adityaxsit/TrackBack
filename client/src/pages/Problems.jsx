@@ -12,7 +12,7 @@ function Problems() {
   const [revision, setRevision] = useState("All");
   const [sortBy, setSortBy] = useState("Newest solved");
   const [company, setCompany] = useState("All companies");
-
+  const [syncing, setSyncing] = useState(false);
   const [problems, setProblems] = useState([]);
 
   useEffect(() => {
@@ -21,6 +21,40 @@ function Problems() {
     }
   }, [data]);
 
+  const handleSyncLeetCode = async () => {
+    try {
+      setSyncing(true);
+
+      const response = await fetch("/api/import/leetcode/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "adisolves",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to sync LeetCode");
+      }
+
+      const data = await response.json();
+
+      console.log("SYNC RESULT:", data);
+
+      alert(`${data.importedCount} new problems imported`);
+
+      // Refresh problems from MongoDB
+      window.location.reload();
+    } catch (error) {
+      console.error("Sync failed:", error);
+
+      alert("Failed to sync LeetCode");
+    } finally {
+      setSyncing(false);
+    }
+  };
   const handleRevisionToggle = async (id) => {
     const problem = problems.find((problem) => problem._id === id);
 
@@ -137,6 +171,9 @@ function Problems() {
     <div className={styles.problemsPage}>
       <section className={styles.header}>
         <h1>Problems</h1>
+        <button onClick={handleSyncLeetCode} disabled={syncing}>
+          {syncing ? "Syncing..." : "Sync LeetCode"}
+        </button>
         <p>Track all solved problems from different coding platforms.</p>
       </section>
 

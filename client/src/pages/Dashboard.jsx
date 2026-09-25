@@ -1,7 +1,6 @@
 import styles from "./Dashboard.module.css";
 import useFetch from "../hooks/useFetch.js";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 const WEEKLY_GOAL = 25;
@@ -24,7 +23,9 @@ function getDateKey(date) {
 function getSolvedDates(problems) {
   return [
     ...new Set(
-      problems.map((problem) => getDateKey(new Date(problem.solvedAt))),
+      problems.map((problem) =>
+        getDateKey(new Date(problem.solvedAt))
+      )
     ),
   ].sort((a, b) => new Date(b) - new Date(a));
 }
@@ -38,10 +39,11 @@ function calculateCurrentStreak(problems) {
   }
 
   const today = new Date();
+
   let currentDate = new Date(
     today.getFullYear(),
     today.getMonth(),
-    today.getDate(),
+    today.getDate()
   );
 
   let streak = 0;
@@ -78,11 +80,16 @@ function calculateBestStreak(problems) {
     const previous = solvedDates[i - 1];
     const current = solvedDates[i];
 
-    const difference = (current - previous) / (1000 * 60 * 60 * 24);
+    const difference =
+      (current - previous) / (1000 * 60 * 60 * 24);
 
     if (difference === 1) {
       currentStreak++;
-      bestStreak = Math.max(bestStreak, currentStreak);
+
+      bestStreak = Math.max(
+        bestStreak,
+        currentStreak
+      );
     } else {
       currentStreak = 1;
     }
@@ -97,60 +104,49 @@ function getSolvedThisWeek(problems) {
 
   const day = today.getDay();
 
-  const differenceFromMonday = day === 0 ? 6 : day - 1;
+  const differenceFromMonday =
+    day === 0 ? 6 : day - 1;
 
   const monday = new Date(today);
-  monday.setDate(today.getDate() - differenceFromMonday);
+
+  monday.setDate(
+    today.getDate() - differenceFromMonday
+  );
+
   monday.setHours(0, 0, 0, 0);
 
-  return problems.filter((problem) => new Date(problem.solvedAt) >= monday)
-    .length;
+  return problems.filter(
+    (problem) =>
+      new Date(problem.solvedAt) >= monday
+  ).length;
 }
 
-// Revision due today or overdue
-function getRevisionDue(revisions) {
-  const today = new Date();
-
-  today.setHours(23, 59, 59, 999);
-
-  return revisions.filter((revision) => {
-    if (revision.revisionStage <= 0 || !revision.nextRevisionAt) {
-      return false;
-    }
-
-    return new Date(revision.nextRevisionAt) <= today;
-  }).length;
+// Problems marked for revision
+function getRevisionDue(problems) {
+  return problems.filter(
+    (problem) => problem.revision
+  ).length;
 }
 
 // Get revision topics that need attention
-function getRevisionTopics(problems, revisions) {
-  const today = new Date();
-
-  today.setHours(23, 59, 59, 999);
-
+function getRevisionTopics(problems) {
   const topicCounts = {};
 
-  revisions.forEach((revision) => {
-    if (revision.revisionStage <= 0 || !revision.nextRevisionAt) {
-      return;
-    }
+  problems
+    .filter((problem) => problem.revision)
+    .forEach((problem) => {
+      const topics = (
+        problem.topic || "Uncategorized"
+      )
+        .split(",")
+        .map((topic) => topic.trim())
+        .filter(Boolean);
 
-    const dueDate = new Date(revision.nextRevisionAt);
-
-    if (dueDate > today) {
-      return;
-    }
-
-    const problem = problems.find(
-      (problem) => problem.id === revision.problemId,
-    );
-
-    if (!problem) {
-      return;
-    }
-
-    topicCounts[problem.topic] = (topicCounts[problem.topic] || 0) + 1;
-  });
+      topics.forEach((topic) => {
+        topicCounts[topic] =
+          (topicCounts[topic] || 0) + 1;
+      });
+    });
 
   return Object.entries(topicCounts)
     .sort((a, b) => b[1] - a[1])
@@ -167,8 +163,9 @@ function getCompanyProgress(problems) {
   const companyCounts = {};
 
   problems.forEach((problem) => {
-    problem.companies.forEach((company) => {
-      companyCounts[company] = (companyCounts[company] || 0) + 1;
+    (problem.companies || []).forEach((company) => {
+      companyCounts[company] =
+        (companyCounts[company] || 0) + 1;
     });
   });
 
@@ -183,24 +180,24 @@ function getCompanyProgress(problems) {
 }
 
 function Dashboard() {
-  const problemsFetch = useFetch("/data/problems.json");
-  const revisionsFetch = useFetch("/data/revision.json");
-  
-  const loading=  problemsFetch.loading || revisionsFetch.loading;
-  const error= problemsFetch.error || revisionsFetch.error;
-
-  
+  // Get problems from MongoDB through Express API
+  const {
+    data,
+    loading,
+    error,
+  } = useFetch("/api/problems");
 
   if (loading) {
     return <LoadingSpinner />;
   }
-  if(error){
-    return <p>Error:{error}</p>
+
+  if (error) {
+    return <p>Error: {error}</p>;
   }
 
-  const problems = problemsFetch.data.problems;
-  const revisions = revisionsFetch.data.revisions;
-    
+  // MongoDB response:
+  // { problems: [...] }
+  const problems = data?.problems ?? [];
 
   // -------------------------
   // DERIVED DASHBOARD DATA
@@ -208,26 +205,37 @@ function Dashboard() {
 
   const totalSolved = problems.length;
 
-  const solvedThisWeek = getSolvedThisWeek(problems);
+  const solvedThisWeek =
+    getSolvedThisWeek(problems);
 
-  const currentStreak = calculateCurrentStreak(problems);
+  const currentStreak =
+    calculateCurrentStreak(problems);
 
-  const bestStreak = calculateBestStreak(problems);
+  const bestStreak =
+    calculateBestStreak(problems);
 
-  const revisionDue = getRevisionDue(revisions);
+  const revisionDue =
+    getRevisionDue(problems);
 
   const weeklySolved = solvedThisWeek;
 
-  // Latest solved problem = Continue Where You Left Off
+  // Latest solved problems
   const recentProblems = [...problems]
-    .sort((a, b) => new Date(b.solvedAt) - new Date(a.solvedAt))
+    .sort(
+      (a, b) =>
+        new Date(b.solvedAt) -
+        new Date(a.solvedAt)
+    )
     .slice(0, 5);
 
+  // Latest solved problem
   const continueProblem = recentProblems[0];
 
-  const revisionTopics = getRevisionTopics(problems, revisions);
+  const revisionTopics =
+    getRevisionTopics(problems);
 
-  const companyProgress = getCompanyProgress(problems);
+  const companyProgress =
+    getCompanyProgress(problems);
 
   // -------------------------
   // MILESTONES
@@ -267,7 +275,7 @@ function Dashboard() {
     },
     {
       id: 3,
-      title: "Due for Revision",
+      title: "Marked for Revision",
       value: revisionDue,
       action: {
         label: "Start revising",
@@ -279,14 +287,19 @@ function Dashboard() {
       title: "Weekly Goal",
       value: `${weeklySolved} / ${WEEKLY_GOAL}`,
       info: `${Math.min(
-        Math.round((weeklySolved / WEEKLY_GOAL) * 100),
-        100,
+        Math.round(
+          (weeklySolved / WEEKLY_GOAL) * 100
+        ),
+        100
       )}% complete`,
     },
   ];
 
   return (
     <div className={styles.dashboardPage}>
+
+      {/* HEADER */}
+
       <section className={styles.header}>
         <h1>Welcome back, Aditya 👋</h1>
         <p>Here's where you stand.</p>
@@ -296,21 +309,36 @@ function Dashboard() {
 
       <section className={styles.statsGrid}>
         {statsCards.map((stat) => (
-          <div className={styles.statCard} key={stat.id}>
-            <p className={styles.statTitle}>{stat.title}</p>
+          <div
+            className={styles.statCard}
+            key={stat.id}
+          >
+            <p className={styles.statTitle}>
+              {stat.title}
+            </p>
 
             <h2>
               {stat.value}
 
               {stat.suffix && (
-                <span className={styles.suffix}> {stat.suffix}</span>
+                <span className={styles.suffix}>
+                  {" "}
+                  {stat.suffix}
+                </span>
               )}
             </h2>
 
-            {stat.info && <p className={styles.statInfo}>{stat.info}</p>}
+            {stat.info && (
+              <p className={styles.statInfo}>
+                {stat.info}
+              </p>
+            )}
 
             {stat.action && (
-              <Link to={stat.action.path} className={styles.statAction}>
+              <Link
+                to={stat.action.path}
+                className={styles.statAction}
+              >
                 {stat.action.label} →
               </Link>
             )}
@@ -321,22 +349,31 @@ function Dashboard() {
       {/* CONTINUE + REVISION */}
 
       <section className={styles.progressGrid}>
+
         {continueProblem && (
           <div className={styles.dashboardCard}>
-            <p className={styles.cardLabel}>Continue Where You Left Off</p>
+            <p className={styles.cardLabel}>
+              Continue Where You Left Off
+            </p>
 
             <div className={styles.problemContent}>
-              <h2>{continueProblem.title}</h2>
+              <h2>
+                {continueProblem.title}
+              </h2>
 
               <p className={styles.problemMeta}>
                 {continueProblem.topic}
+
                 <span>•</span>
+
                 {continueProblem.difficulty}
               </p>
 
               <p className={styles.lastWorked}>
                 Solved on{" "}
-                {new Date(continueProblem.solvedAt).toLocaleDateString()}
+                {new Date(
+                  continueProblem.solvedAt
+                ).toLocaleDateString()}
               </p>
             </div>
 
@@ -352,52 +389,87 @@ function Dashboard() {
         )}
 
         <div className={styles.dashboardCard}>
-          <p className={styles.cardLabel}>Revision Focus</p>
+          <p className={styles.cardLabel}>
+            Revision Focus
+          </p>
 
-          <h2 className={styles.revisionHeading}>Topics needing attention</h2>
+          <h2
+            className={styles.revisionHeading}
+          >
+            Topics needing attention
+          </h2>
 
           <div className={styles.revisionList}>
             {revisionTopics.length > 0 ? (
               revisionTopics.map((item) => (
-                <div className={styles.revisionItem} key={item.id}>
+                <div
+                  className={styles.revisionItem}
+                  key={item.id}
+                >
                   <span>{item.topic}</span>
 
-                  <span className={styles.dueCount}>{item.due} due</span>
+                  <span
+                    className={styles.dueCount}
+                  >
+                    {item.due} marked
+                  </span>
                 </div>
               ))
             ) : (
-              <p>No revisions due 🎉</p>
+              <p>No revisions marked 🎉</p>
             )}
           </div>
         </div>
+
       </section>
 
       {/* MILESTONES + COMPANIES */}
 
       <section className={styles.insightsGrid}>
+
         <div className={styles.dashboardCard}>
-          <p className={styles.cardLabel}>Next Milestones</p>
+          <p className={styles.cardLabel}>
+            Next Milestones
+          </p>
 
           <div className={styles.milestoneList}>
             {milestones.map((milestone) => {
               const progress = Math.min(
-                (milestone.current / milestone.target) * 100,
-                100,
+                (milestone.current /
+                  milestone.target) *
+                  100,
+                100
               );
 
               return (
-                <div className={styles.milestoneItem} key={milestone.id}>
-                  <div className={styles.milestoneInfo}>
-                    <span>{milestone.title}</span>
+                <div
+                  className={styles.milestoneItem}
+                  key={milestone.id}
+                >
+                  <div
+                    className={
+                      styles.milestoneInfo
+                    }
+                  >
+                    <span>
+                      {milestone.title}
+                    </span>
 
                     <span>
-                      {milestone.current} / {milestone.target}
+                      {milestone.current} /{" "}
+                      {milestone.target}
                     </span>
                   </div>
 
-                  <div className={styles.progressBar}>
+                  <div
+                    className={
+                      styles.progressBar
+                    }
+                  >
                     <div
-                      className={styles.progressFill}
+                      className={
+                        styles.progressFill
+                      }
                       style={{
                         width: `${progress}%`,
                       }}
@@ -410,34 +482,59 @@ function Dashboard() {
         </div>
 
         <div className={styles.dashboardCard}>
-          <p className={styles.cardLabel}>Top Companies Practiced</p>
+          <p className={styles.cardLabel}>
+            Top Companies Practiced
+          </p>
 
           <div className={styles.companyList}>
-            {companyProgress.map((company) => (
-              <div className={styles.companyItem} key={company.id}>
-                <span>{company.company}</span>
+            {companyProgress.length > 0 ? (
+              companyProgress.map((company) => (
+                <div
+                  className={styles.companyItem}
+                  key={company.id}
+                >
+                  <span>
+                    {company.company}
+                  </span>
 
-                <span className={styles.companySolved}>
-                  {company.solved} solved
-                </span>
-              </div>
-            ))}
+                  <span
+                    className={
+                      styles.companySolved
+                    }
+                  >
+                    {company.solved} solved
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>
+                No company data available yet.
+              </p>
+            )}
           </div>
         </div>
+
       </section>
 
       {/* RECENT PROBLEMS */}
 
       <section className={styles.recentSection}>
-        <div className={styles.sectionHeader}>
-          <p className={styles.cardLabel}>Recent Solved Problems</p>
 
-          <Link to="/problems" className={styles.viewAll}>
+        <div className={styles.sectionHeader}>
+          <p className={styles.cardLabel}>
+            Recent Solved Problems
+          </p>
+
+          <Link
+            to="/problems"
+            className={styles.viewAll}
+          >
             View all →
           </Link>
         </div>
 
         <div className={styles.problemTable}>
+
           <div className={styles.tableHeader}>
             <span>Problem</span>
             <span>Topic</span>
@@ -446,7 +543,10 @@ function Dashboard() {
           </div>
 
           {recentProblems.map((problem) => (
-            <div className={styles.problemRow} key={problem.id}>
+            <div
+              className={styles.problemRow}
+              key={problem._id}
+            >
               <a
                 className={styles.problemTitle}
                 href={problem.problemUrl}
@@ -458,21 +558,35 @@ function Dashboard() {
 
               <span>{problem.topic}</span>
 
-              <span>{problem.difficulty}</span>
+              <span>
+                {problem.difficulty}
+              </span>
 
-              <span>{new Date(problem.solvedAt).toLocaleDateString()}</span>
+              <span>
+                {new Date(
+                  problem.solvedAt
+                ).toLocaleDateString()}
+              </span>
             </div>
           ))}
+
         </div>
       </section>
 
       {/* DAILY QUOTE */}
 
       <section className={styles.quoteSection}>
-        <p className={styles.quoteText}>“{dailyQuote.text}”</p>
+        <p className={styles.quoteText}>
+          “{dailyQuote.text}”
+        </p>
 
-        <span className={styles.quoteAuthor}>— {dailyQuote.author}</span>
+        <span
+          className={styles.quoteAuthor}
+        >
+          — {dailyQuote.author}
+        </span>
       </section>
+
     </div>
   );
 }

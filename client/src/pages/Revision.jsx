@@ -1,148 +1,81 @@
 import useFetch from "../hooks/useFetch.js";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./Revision.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 
 function Revision() {
-  const problemsFetch = useFetch("/data/problems.json");
-  const revisionsFetch = useFetch("/data/revision.json");
-  
-  const loading = problemsFetch.loading || revisionsFetch.loading;
-  const error = problemsFetch.error || revisionsFetch.error;
+  const { data, loading, error } = useFetch("/api/problems");
+
   const [status, setStatus] = useState("queue");
 
-  const problems = problemsFetch.data ? problemsFetch.data.problems : [];
- 
-  const [revisions, setRevisions] = useState([]);
-  
-  useEffect(() => {   
-    if (revisionsFetch.data) {
-      setRevisions(revisionsFetch.data.revisions);
-    }
-  }, [revisionsFetch.data]);
-
   if (loading) {
-  return <LoadingSpinner />;
-}
-if (error) {
-  return <p>Error: {error}</p>;
-}
+    return <LoadingSpinner />;
+  }
 
-  //mark reviewed
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
 
-  const handleMarkReviewed = (revisionId) => {
-    setRevisions((previousRevisions) =>
-      previousRevisions.map((revision) => {
-        if (revision.id !== revisionId) {
-          return revision;
-        }
+  const problems = data?.problems ?? [];
 
-        const today = new Date();
+  // Only problems marked for revision
+  const revisionProblems = problems.filter(
+    (problem) => problem.revision === true,
+  );
 
-        const nextRevision = new Date(today);
+  // Mark problem as reviewed
+  const handleMarkReviewed = async (problemId) => {
+    try {
+      const response = await fetch(`/api/problems/${problemId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          revision: false,
+        }),
+      });
 
-        nextRevision.setDate(
-          nextRevision.getDate() + revision.revisionStage * 3,
-        );
-
-        return {
-          ...revision,
-          revisionStage: revision.revisionStage + 1,
-          lastRevisedAt: today.toISOString(),
-          nextRevisionAt: nextRevision.toISOString(),
-        };
-      }),
-    );
-  };
-
-  // CONNECT PROBLEM DATA WITH REVISION DATA
-  const revisionProblems = revisions
-    .filter((revision) => revision.revisionStage > 0)
-    .map((revision) => {
-      const problem = problems.find(
-        (problem) => problem.id === revision.problemId,
-      );
-
-      if (!problem) {
-        return null;
+      if (!response.ok) {
+        throw new Error("Failed to update revision");
       }
 
-      return {
-        ...problem,
-
-        revisionId: revision.id,
-        revisionStage: revision.revisionStage,
-        lastRevisedAt: revision.lastRevisedAt,
-        nextRevisionAt: revision.nextRevisionAt,
-      };
-    })
-    .filter(Boolean);
-
-  // GET REVISION STATUS FROM DATE
-  const getRevisionStatus = (problem) => {
-    if (!problem.nextRevisionAt) {
-      return "unscheduled";
+      // Update UI immediately
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to mark reviewed:", error);
     }
-
-    const today = new Date();
-    const dueDate = new Date(problem.nextRevisionAt);
-
-    const todayDate = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-    );
-
-    const revisionDate = new Date(
-      dueDate.getFullYear(),
-      dueDate.getMonth(),
-      dueDate.getDate(),
-    );
-
-    if (revisionDate < todayDate) {
-      return "overdue";
-    }
-
-    if (revisionDate.getTime() === todayDate.getTime()) {
-      return "due";
-    }
-
-    return "upcoming";
   };
 
-  // ADD DERIVED STATUS TO EACH PROBLEM
-  const problemsWithStatus = revisionProblems.map((problem) => ({
-    ...problem,
-    revisionStatus: getRevisionStatus(problem),
-  }));
+  /*
+    Current database model only has:
 
-  // COUNTS
-  const dueCount = problemsWithStatus.filter(
-    (problem) => problem.revisionStatus === "due",
-  ).length;
+    revision: Boolean
 
-  const overdueCount = problemsWithStatus.filter(
-    (problem) => problem.revisionStatus === "overdue",
-  ).length;
+    So there are no:
+    - revisionStage
+    - lastRevisedAt
+    - nextRevisionAt
 
-  const upcomingCount = problemsWithStatus.filter(
-    (problem) => problem.revisionStatus === "upcoming",
-  ).length;
+    Therefore, for now every marked problem is
+    simply considered part of the revision queue.
+  */
 
-  // FILTER QUEUE
-  const filteredProblems = problemsWithStatus.filter((problem) => {
+  const dueCount = revisionProblems.length;
+  const overdueCount = 0;
+  const upcomingCount = 0;
+
+  const filteredProblems = revisionProblems.filter((problem) => {
     if (status === "queue") {
-      return (
-        problem.revisionStatus === "due" || problem.revisionStatus === "overdue"
-      );
+      return true;
     }
 
-    return problem.revisionStatus === status;
+    // Scheduled revision statuses will be added later
+    return false;
   });
 
-  // SORT MOST URGENT FIRST
   const sortedProblems = [...filteredProblems].sort(
-    (a, b) => new Date(a.nextRevisionAt) - new Date(b.nextRevisionAt),
+    (a, b) => new Date(a.solvedAt) - new Date(b.solvedAt),
   );
 
   return (
@@ -159,7 +92,7 @@ if (error) {
 
       <section className={styles.statsGrid}>
         <article className={styles.statCard}>
-          <p>Due Today</p>
+          <p>Marked for Revision</p>
           <h2>{dueCount}</h2>
         </article>
 
@@ -174,12 +107,10 @@ if (error) {
         </article>
 
         <article className={styles.statCard}>
-          <p>Total Scheduled</p>
-          <h2>{problemsWithStatus.length}</h2>
+          <p>Total Revision Problems</p>
+          <h2>{revisionProblems.length}</h2>
         </article>
       </section>
-
-      {/* FILTER */}
 
       {/* MAIN CONTENT */}
 
@@ -190,16 +121,21 @@ if (error) {
           <div className={styles.queueHeader}>
             <div>
               <h2>Revision Problems</h2>
+
               <span>{sortedProblems.length} problems</span>
             </div>
+
             <div className={styles.controls}>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="queue">Today's Queue</option>
+                <option value="queue">Revision Queue</option>
+
                 <option value="due">Due Today</option>
+
                 <option value="overdue">Overdue</option>
+
                 <option value="upcoming">Upcoming</option>
               </select>
             </div>
@@ -211,7 +147,7 @@ if (error) {
             </div>
           ) : (
             sortedProblems.map((problem) => (
-              <article className={styles.queueItem} key={problem.id}>
+              <article className={styles.queueItem} key={problem._id}>
                 {/* TITLE */}
 
                 <div className={styles.itemTop}>
@@ -219,9 +155,7 @@ if (error) {
                     {problem.title}
                   </a>
 
-                  <span className={styles.stage}>
-                    Stage {problem.revisionStage}
-                  </span>
+                  <span className={styles.stage}>Marked</span>
                 </div>
 
                 {/* META */}
@@ -252,19 +186,13 @@ if (error) {
                   <div>
                     <p>Last Revised</p>
 
-                    <span>
-                      {problem.lastRevisedAt
-                        ? new Date(problem.lastRevisedAt).toLocaleDateString()
-                        : "Not yet"}
-                    </span>
+                    <span>Not tracked yet</span>
                   </div>
 
                   <div>
                     <p>Next Due</p>
 
-                    <span>
-                      {new Date(problem.nextRevisionAt).toLocaleDateString()}
-                    </span>
+                    <span>Not scheduled</span>
                   </div>
                 </div>
 
@@ -273,7 +201,7 @@ if (error) {
                 <div className={styles.actionRow}>
                   <button
                     type="button"
-                    onClick={() => handleMarkReviewed(problem.revisionId)}
+                    onClick={() => handleMarkReviewed(problem._id)}
                   >
                     <i className={`bi bi-check2 ${styles.reviewIcon}`}></i>
                     Mark Reviewed
@@ -307,7 +235,7 @@ if (error) {
             <p className={styles.sideTitle}>Queue Summary</p>
 
             <div className={styles.summaryRow}>
-              <span>Due Today</span>
+              <span>Marked for Revision</span>
               <span>{dueCount}</span>
             </div>
 

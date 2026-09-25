@@ -1,26 +1,20 @@
-import {useState } from "react";
 import useFetch from "../hooks/useFetch.js";
 import styles from "./Analytics.module.css";
 import LoadingSpinner from "../components/LoadingSpinner/LoadingSpinner";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
 function Analytics() {
-  const problemsFetch = useFetch("/data/problems.json");
-  const revisionsFetch = useFetch("/data/revision.json");
-  
-  const loading = problemsFetch.loading || revisionsFetch.loading;
-  const error = problemsFetch.error || revisionsFetch.error;
-
-  // FETCH DATA
-  const problems = problemsFetch.data ? problemsFetch.data.problems : [];
-  const revisions = revisionsFetch.data ? revisionsFetch.data.revisions : [];
+  const { data, loading, error } = useFetch("/api/problems");
 
   if (loading) {
     return <LoadingSpinner />;
   }
-  if(error){
-    return <p>Error:{error}</p>
+
+  if (error) {
+    return <p>Error: {error}</p>;
   }
+
+  const problems = data?.problems ?? [];
 
   // -------------------------
   // 1. TOTAL SOLVED
@@ -109,33 +103,13 @@ function Analytics() {
   const currentStreak = calculateCurrentStreak();
 
   // -------------------------
-  // 4. REVISION DUE
+  // 4. REVISION
   // -------------------------
 
-  const getRevisionDue = () => {
-    const today = new Date();
-
-    today.setHours(23, 59, 59, 999);
-
-    return revisions.filter((revision) => {
-      // Ignore inactive revisions
-      if (revision.revisionStage <= 0 || !revision.nextRevisionAt) {
-        return false;
-      }
-
-      const dueDate = new Date(revision.nextRevisionAt);
-
-      // Future revision = upcoming
-      if (dueDate > today) {
-        return false;
-      }
-
-      // Today or earlier = due / overdue
-      return true;
-    }).length;
-  };
-
-  const revisionDue = getRevisionDue();
+  // Current DB only stores revision: true/false
+  const revisionDue = problems.filter(
+    (problem) => problem.revision === true,
+  ).length;
 
   // -------------------------
   // ANALYTICS CARDS
@@ -157,25 +131,32 @@ function Analytics() {
     {
       id: 3,
       title: "Current Streak",
-      value: `${currentStreak} `,
+      value: `${currentStreak}`,
       subtitle: "days",
     },
     {
       id: 4,
       title: "Revision Due",
       value: revisionDue,
-      subtitle: "Due or overdue",
+      subtitle: "Marked for revision",
     },
   ];
 
   // -------------------------
-  // Problems By Topics
+  // PROBLEMS BY TOPICS
   // -------------------------
 
   const topicCounts = {};
 
   problems.forEach((problem) => {
-    topicCounts[problem.topic] = (topicCounts[problem.topic] || 0) + 1;
+    const topics = (problem.topic || "Uncategorized")
+      .split(",")
+      .map((topic) => topic.trim())
+      .filter(Boolean);
+
+    topics.forEach((topic) => {
+      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+    });
   });
 
   const topicData = Object.entries(topicCounts)
@@ -184,12 +165,13 @@ function Analytics() {
     .map(([topic, count]) => ({
       topic,
       count,
-      percentage: (count / totalSolved) * 100,
+      percentage: totalSolved > 0 ? (count / totalSolved) * 100 : 0,
     }));
 
   // -------------------------
   // DIFFICULTY DISTRIBUTION
   // -------------------------
+
   const difficultyCounts = {
     Easy: 0,
     Medium: 0,
@@ -197,7 +179,9 @@ function Analytics() {
   };
 
   problems.forEach((problem) => {
-    difficultyCounts[problem.difficulty]++;
+    if (difficultyCounts[problem.difficulty] !== undefined) {
+      difficultyCounts[problem.difficulty]++;
+    }
   });
 
   const difficultyData = Object.entries(difficultyCounts).map(
@@ -214,7 +198,7 @@ function Analytics() {
   const platformCounts = {};
 
   problems.forEach((problem) => {
-    const platform = problem.platform;
+    const platform = problem.platform || "Unknown";
 
     platformCounts[platform] = (platformCounts[platform] || 0) + 1;
   });
@@ -224,16 +208,17 @@ function Analytics() {
     .map(([platform, count]) => ({
       platform,
       count,
-      percentage: (count / totalSolved) * 100,
+      percentage: totalSolved > 0 ? (count / totalSolved) * 100 : 0,
     }));
 
   // -------------------------
   // COMPANY DISTRIBUTION
   // -------------------------
+
   const companyCounts = {};
 
   problems.forEach((problem) => {
-    problem.companies.forEach((company) => {
+    (problem.companies || []).forEach((company) => {
       companyCounts[company] = (companyCounts[company] || 0) + 1;
     });
   });
@@ -244,7 +229,7 @@ function Analytics() {
     .map(([company, count]) => ({
       company,
       count,
-      percentage: (count / totalSolved) * 100,
+      percentage: totalSolved > 0 ? (count / totalSolved) * 100 : 0,
     }));
 
   // -------------------------
@@ -256,12 +241,11 @@ function Analytics() {
   problems.forEach((problem) => {
     const date = new Date(problem.solvedAt);
 
-    const dateKey = `${date.getFullYear()}-${String(
-      date.getMonth() + 1,
-    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const dateKey = getDateKey(date);
 
     dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1;
   });
+
   const generateCalendarDates = () => {
     const dates = [];
 
@@ -272,11 +256,7 @@ function Analytics() {
     const currentDate = new Date(startDate);
 
     while (currentDate <= today) {
-      const dateKey = `${currentDate.getFullYear()}-${String(
-        currentDate.getMonth() + 1,
-      ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
-
-      dates.push(dateKey);
+      dates.push(getDateKey(currentDate));
 
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -285,6 +265,7 @@ function Analytics() {
   };
 
   const calendarDates = generateCalendarDates();
+
   const weeks = [];
 
   let currentWeek = [];
@@ -292,20 +273,13 @@ function Analytics() {
   calendarDates.forEach((dateKey) => {
     const date = new Date(dateKey);
 
-    // JavaScript:
-    // Sunday = 0
-    // Monday = 1
-    // ...
-    // Saturday = 6
-
     const day = date.getDay();
 
     // Convert so Monday = 0
     const mondayIndex = day === 0 ? 6 : day - 1;
 
-    // If this is the first date of the year
-    // and it doesn't start on Monday,
-    // add empty cells before it.
+    // Add empty cells before
+    // the first day of the year
     if (weeks.length === 0 && currentWeek.length === 0) {
       for (let i = 0; i < mondayIndex; i++) {
         currentWeek.push(null);
@@ -314,15 +288,13 @@ function Analytics() {
 
     currentWeek.push(dateKey);
 
-    // Once we have 7 days,
-    // the week is complete.
     if (currentWeek.length === 7) {
       weeks.push(currentWeek);
       currentWeek = [];
     }
   });
 
-  // Add the remaining days
+  // Add remaining days
   if (currentWeek.length > 0) {
     while (currentWeek.length < 7) {
       currentWeek.push(null);
@@ -330,6 +302,7 @@ function Analytics() {
 
     weeks.push(currentWeek);
   }
+
   const getHeatLevel = (dateKey) => {
     const count = dateCounts[dateKey] || 0;
 
@@ -347,6 +320,7 @@ function Analytics() {
 
     return "level3";
   };
+
   const getMonthLabel = (dateKey) => {
     const date = new Date(dateKey);
 
@@ -354,6 +328,7 @@ function Analytics() {
       month: "short",
     });
   };
+
   const monthLabels = [];
 
   weeks.forEach((week, weekIndex) => {
@@ -365,8 +340,6 @@ function Analytics() {
 
     const month = new Date(firstDate).getMonth();
 
-    // Only add label when this is the first week
-    // containing that month.
     if (
       weekIndex === 0 ||
       new Date(
@@ -408,10 +381,12 @@ function Analytics() {
       </section>
 
       <section className={styles.analyticsGrid}>
-        {/* Problems By Topics */}
+        {/* TOPICS */}
+
         <section className={styles.analyticsCard}>
           <div className={styles.cardHeader}>
             <p className={styles.cardLabel}>Problems By Topics</p>
+
             <span className={styles.cardSubtext}>
               Distribution of solved problems
             </span>
@@ -422,6 +397,7 @@ function Analytics() {
               <div className={styles.topicItem} key={item.topic}>
                 <div className={styles.topicInfo}>
                   <span>{item.topic}</span>
+
                   <span>{Math.round(item.percentage)}%</span>
                 </div>
 
@@ -438,7 +414,8 @@ function Analytics() {
           </div>
         </section>
 
-        {/* Difficulty Distribution */}
+        {/* DIFFICULTY */}
+
         <section className={styles.analyticsCard}>
           <div className={styles.cardHeader}>
             <p className={styles.cardLabel}>Difficulty Distribution</p>
@@ -449,7 +426,6 @@ function Analytics() {
           </div>
 
           <div className={styles.difficultyContent}>
-            {/* DONUT */}
             <div className={styles.difficultyChart}>
               <ResponsiveContainer width="100%" height={230}>
                 <PieChart>
@@ -482,14 +458,13 @@ function Analytics() {
                 </PieChart>
               </ResponsiveContainer>
 
-              {/* 50 INSIDE DONUT */}
               <div className={styles.difficultyCenter}>
                 <strong>{totalSolved}</strong>
+
                 <span>Solved</span>
               </div>
             </div>
 
-            {/* LEGEND BESIDE DONUT */}
             <div className={styles.difficultyLegend}>
               {difficultyData.map((item) => (
                 <div className={styles.legendItem} key={item.difficulty}>
@@ -502,7 +477,10 @@ function Analytics() {
                   <span>{item.difficulty}</span>
 
                   <strong>
-                    {item.count} ({Math.round((item.count / totalSolved) * 100)}
+                    {item.count} (
+                    {totalSolved > 0
+                      ? Math.round((item.count / totalSolved) * 100)
+                      : 0}
                     %)
                   </strong>
                 </div>
@@ -511,9 +489,12 @@ function Analytics() {
           </div>
         </section>
       </section>
-      {/* Platform Distribution & Company Distribution */}
+
+      {/* PLATFORM + COMPANY */}
+
       <section className={styles.analyticsGrid}>
-        {/* Platform Distribution */}
+        {/* PLATFORM */}
+
         <section className={styles.analyticsCard}>
           <div className={styles.cardHeader}>
             <p className={styles.cardLabel}>Platform Distribution</p>
@@ -544,7 +525,9 @@ function Analytics() {
             ))}
           </div>
         </section>
-        {/* Company Distribution */}
+
+        {/* COMPANIES */}
+
         <section className={styles.analyticsCard}>
           <div className={styles.cardHeader}>
             <p className={styles.cardLabel}>Top Companies Practiced</p>
@@ -576,6 +559,7 @@ function Analytics() {
           </div>
         </section>
       </section>
+
       {/* SOLVING ACTIVITY / HEATMAP */}
 
       <section className={styles.heatmapCard}>
