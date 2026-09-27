@@ -47,7 +47,7 @@
 .loginButton,
 .signupButton {
   padding: 9px 18px;
-
+  color: white;
   border-radius: 8px;
   font-size: 14px;
   cursor: pointer;

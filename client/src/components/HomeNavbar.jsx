@@ -12,13 +12,13 @@ function HomeNavbar() {
       <div className={styles.navLinks}>
         <a href="#features">Features</a>
 
-        <button className={styles.loginButton}>
+        <Link to="/login" className={styles.loginButton}>
           Login
-        </button>
+        </Link>
 
-        <button className={styles.signupButton}>
+        <Link to="/register" className={styles.signupButton}>
           Sign Up
-        </button>
+        </Link>
       </div>
     </nav>
   );

@@ -1,0 +1,144 @@
+.loginPage {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  padding: 24px;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 40px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.loginCard h1 {
+  margin: 0 0 8px;
+
+  text-align: center;
+  color: var(--text-primary);
+
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0 0 30px;
+
+  text-align: center;
+
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.formGroup input {
+  width: 100%;
+
+  padding: 12px 14px;
+
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.formGroup input::placeholder {
+  color: var(--text-secondary);
+}
+
+.formGroup input:focus {
+  border-color: var(--lava);
+
+  box-shadow: 0 0 0 3px rgba(255, 77, 0, 0.12);
+}
+
+.loginButton {
+  width: 100%;
+
+  padding: 12px 16px;
+
+  margin-top: 5px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: var(--lava);
+  color: white;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.loginButton:hover {
+  background: var(--lava-soft);
+
+  box-shadow: 0 8px 20px rgba(255, 77, 0, 0.2);
+}
+
+.loginButton:active {
+  transform: translateY(1px);
+}
+
+.registerText {
+  margin: 24px 0 0;
+
+  text-align: center;
+
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.registerText a {
+  color: var(--lava);
+
+  font-weight: 600;
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.registerText a:hover {
+  color: var(--lava-soft);
+}

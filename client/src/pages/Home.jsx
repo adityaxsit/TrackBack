@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import HomeNavbar from "../components/HomeNavbar";
 import styles from "./Home.module.css";
 
 function Home() {
+  const navigate = useNavigate();
+
   const features = [
     {
       icon: "✓",
@@ -51,11 +54,17 @@ function Home() {
           </p>
 
           <div className={styles.heroActions}>
-            <button className={styles.primaryButton}>
+            <button
+              className={styles.primaryButton}
+              onClick={() => navigate("/register")}
+            >
               Get Started
             </button>
 
-            <button className={styles.secondaryButton}>
+            <button
+              className={styles.secondaryButton}
+              onClick={() => navigate("/login")}
+            >
               Login
             </button>
           </div>
