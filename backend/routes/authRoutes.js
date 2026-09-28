@@ -5,9 +5,18 @@ const {
   loginUser,
 } = require("../controllers/authController");
 
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+
+router.get("/test", authMiddleware, (req, res) => {
+  res.status(200).json({
+    message: "You are authorized",
+    userId: req.user.userId,
+  });
+});
 
 module.exports = router;

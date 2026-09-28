@@ -1,5 +1,5 @@
 const express = require("express");
-
+const authMiddleware = require("../middleware/authMiddleware");
 const {
   getCollections,
   createCollection,
@@ -9,12 +9,12 @@ const {
 
 const router = express.Router();
 
-router.get("/", getCollections);
+router.get("/", authMiddleware, getCollections);
 
-router.post("/", createCollection);
+router.post("/", authMiddleware, createCollection);
 
-router.patch("/:id", updateCollection);
+router.patch("/:id", authMiddleware, updateCollection);
 
-router.delete("/:id", deleteCollection);
+router.delete("/:id", authMiddleware, deleteCollection);
 
 module.exports = router;

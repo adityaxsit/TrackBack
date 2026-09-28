@@ -1,12 +1,11 @@
 const Collection = require("../models/Collection");
 
-
 // GET ALL COLLECTIONS
-
 const getCollections = async (req, res) => {
   try {
-    const collections = await Collection.find()
-      .populate("problemIds");
+    const collections = await Collection.find({
+      userId: req.user.userId,
+    }).populate("problemIds");
 
     res.status(200).json({
       collections,
@@ -19,9 +18,7 @@ const getCollections = async (req, res) => {
   }
 };
 
-
 // CREATE COLLECTION
-
 const createCollection = async (req, res) => {
   try {
     const {
@@ -41,6 +38,7 @@ const createCollection = async (req, res) => {
       description: description?.trim() || "",
       type: "custom",
       problemIds: problemIds || [],
+      userId: req.user.userId,
     });
 
     const populatedCollection =
@@ -58,14 +56,15 @@ const createCollection = async (req, res) => {
   }
 };
 
-
 // UPDATE COLLECTION
-
 const updateCollection = async (req, res) => {
   try {
     const collection =
-      await Collection.findByIdAndUpdate(
-        req.params.id,
+      await Collection.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          userId: req.user.userId,
+        },
         req.body,
         {
           returnDocument: "after",
@@ -91,15 +90,14 @@ const updateCollection = async (req, res) => {
   }
 };
 
-
 // DELETE COLLECTION
-
 const deleteCollection = async (req, res) => {
   try {
     const collection =
-      await Collection.findByIdAndDelete(
-        req.params.id,
-      );
+      await Collection.findOneAndDelete({
+        _id: req.params.id,
+        userId: req.user.userId,
+      });
 
     if (!collection) {
       return res.status(404).json({
@@ -118,7 +116,6 @@ const deleteCollection = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   getCollections,

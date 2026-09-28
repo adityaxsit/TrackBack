@@ -1,11 +1,19 @@
 const express = require("express");
-const { getProblems,createProblem,updateProblem,deleteProblem } = require("../controllers/problemControllers");
+
+const {
+  getProblems,
+  createProblem,
+  updateProblem,
+  deleteProblem,
+} = require("../controllers/problemControllers");
+
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/", getProblems);
-router.post("/", createProblem);
-router.patch("/:id", updateProblem);
-router.delete("/:id", deleteProblem);
+router.get("/", authMiddleware, getProblems);
+router.post("/", authMiddleware, createProblem);
+router.patch("/:id", authMiddleware, updateProblem);
+router.delete("/:id", authMiddleware, deleteProblem);
 
 module.exports = router;

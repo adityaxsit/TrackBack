@@ -1,14 +1,13 @@
 const express = require("express");
 
 const {
-  importLeetCodeProblems,
   syncLeetCodeProblems,
+  importLeetCodeProblems,
 } = require("../controllers/leetcodeController");
 
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
-
-router.post("/", importLeetCodeProblems);
-
-router.post("/sync", syncLeetCodeProblems);
-
+router.post("/sync", authMiddleware, syncLeetCodeProblems);
+router.post("/import", authMiddleware, importLeetCodeProblems);
 module.exports = router;

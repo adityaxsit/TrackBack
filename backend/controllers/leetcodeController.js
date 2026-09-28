@@ -63,6 +63,7 @@ const importLeetCodeProblems = async (req, res) => {
         solvedAt: new Date(Number(submission.timestamp)),
         problemUrl,
         notes: "",
+        userId: req.user.userId,
       });
 
       imported.push(problem);
@@ -169,6 +170,7 @@ const syncLeetCodeProblems = async (req, res) => {
 
         problemUrl,
         notes: "",
+        userId: req.user.userId,
       });
 
       imported.push(problem);

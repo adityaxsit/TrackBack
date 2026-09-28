@@ -5,7 +5,6 @@ const problemRoutes = require("./routes/problemRoutes");
 const leetcodeRoutes = require("./routes/leetcodeRoutes");
 const collectionRoutes = require("./routes/collectionRoutes");
 const authRoutes = require("./routes/authRoutes");
-
 const app = express();
 const PORT = 5000;
 
@@ -19,7 +18,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/problems", problemRoutes);
 app.use("/api/import/leetcode", leetcodeRoutes);
-app.use("/api/collections",collectionRoutes,);
+app.use("/api/collections",collectionRoutes);
 app.use("/api/auth", authRoutes);
 
 app.listen(PORT, () => {

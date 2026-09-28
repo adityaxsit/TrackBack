@@ -2,12 +2,22 @@ const Problem = require("../models/Problem");
 
 const getProblems = async (req, res) => {
   try {
-    const problems = await Problem.find();
+    console.log("JWT userId:", req.user.userId);
 
-    res.status(200).json({
-      problems,
+    const allProblems = await Problem.find({});
+
+    console.log("Total problems Mongoose sees:", allProblems.length);
+
+    const problems = await Problem.find({
+      userId: req.user.userId,
     });
+
+    console.log("Problems found:", problems.length);
+
+    res.status(200).json({ problems });
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       message: "Failed to fetch problems",
       error: error.message,
@@ -17,7 +27,10 @@ const getProblems = async (req, res) => {
 
 const createProblem = async (req, res) => {
   try {
-    const problem = await Problem.create(req.body);
+    const problem = await Problem.create({
+      ...req.body,
+      userId: req.user.userId,
+    });
 
     res.status(201).json({
       message: "Problem created successfully",
@@ -33,11 +46,14 @@ const createProblem = async (req, res) => {
 
 const updateProblem = async (req, res) => {
   try {
-    const problem = await Problem.findByIdAndUpdate(
-      req.params.id,
+    const problem = await Problem.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user.userId,
+      },
       req.body,
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       }
     );
@@ -62,7 +78,10 @@ const updateProblem = async (req, res) => {
 
 const deleteProblem = async (req, res) => {
   try {
-    const problem = await Problem.findByIdAndDelete(req.params.id);
+    const problem = await Problem.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.userId,
+    });
 
     if (!problem) {
       return res.status(404).json({

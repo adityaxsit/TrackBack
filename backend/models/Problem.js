@@ -46,11 +46,18 @@ const problemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // 👇 THIS is what we need
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
-
-
 
 const Problem = mongoose.model("Problem", problemSchema);
 
